@@ -877,6 +877,11 @@
               </select>
               <small>前台会根据工具状态显示不同标签和按钮。</small>
             </label>
+            <label class="sb-field">
+              排序权重
+              <input name="sort_order" type="number" placeholder="例如：1" min="1" step="1">
+              <small>数字越小越靠前；不填默认 999。适合用来固定首页/列表页显示顺序。</small>
+            </label>
             <label class="sb-field full">
               工具简介
               <textarea name="description" placeholder="用一两句话说明这个工具是什么、适合做什么。"></textarea>
@@ -1023,6 +1028,11 @@
                 <option value="推荐">推荐</option>
               </select>
               <small>控制前台按钮和状态标签。可下载 → 显示下载按钮；整理中 → 显示"资源整理中"；需联系获取 → 显示"联系获取"按钮。</small>
+            </label>
+            <label class="sb-field">
+              排序权重
+              <input name="sort_order" type="number" placeholder="例如：1" min="1" step="1">
+              <small>数字越小越靠前；不填默认 999。适合用来固定首页/列表页显示顺序。</small>
             </label>
             <label class="sb-field">
               格式 / 大小
@@ -1175,6 +1185,11 @@
               <option value="published">已发布 published</option>
             </select>
             <small>草稿不会作为正式发布内容展示；已发布会进入前台读取范围。</small>
+          </label>
+          <label class="sb-field">
+            排序权重
+            <input name="sort_order" type="number" placeholder="例如：1" min="1" step="1">
+            <small>数字越小越靠前；不填默认 999。适合用来固定首页/列表页显示顺序。</small>
           </label>
           <label class="sb-field full">
             教程标题
@@ -1333,6 +1348,11 @@
                 <option value="隐藏">隐藏</option>
               </select>
               <small>前台会根据案例状态显示不同标签样式。</small>
+            </label>
+            <label class="sb-field">
+              排序权重
+              <input name="sort_order" type="number" placeholder="例如：1" min="1" step="1">
+              <small>数字越小越靠前；不填默认 999。适合用来固定首页/列表页显示顺序。</small>
             </label>
             <label class="sb-field">
               使用工具
@@ -2075,7 +2095,7 @@
       if (!session || !session.access_token) return;
       setLoading(els.refreshButton, "读取中...", true);
       try {
-        tutorials = await requestSupabase("/rest/v1/tutorials?select=*&order=created_at.desc", {
+        tutorials = await requestSupabase("/rest/v1/tutorials?select=*&order=sort_order.asc,created_at.desc", {
           method: "GET",
           headers: authHeaders()
         });
@@ -2124,6 +2144,7 @@
             '<div class="sb-list-meta">',
               '<span class="sb-badge">分类：' + escapeHtml(tutorial.category || "未分类") + '</span>',
               '<span class="sb-badge ' + escapeHtml(status) + '">状态：' + escapeHtml(statusLabel(status)) + '</span>',
+              '<span class="sb-badge">排序：' + escapeHtml(tutorial.sort_order != null ? tutorial.sort_order : 999) + '</span>',
               '<span>更新时间：' + escapeHtml(formatDate(tutorial.updated_at)) + '</span>',
             '</div>',
             '<div class="sb-list-actions">',
@@ -2166,11 +2187,14 @@
       form.elements.content.value = tutorial.content || "";
       form.elements.cover_url.value = tutorial.cover_url || "";
       form.elements.tags.value = tagsToInput(tutorial.tags);
+      var sortOrder = parseInt(tutorial.sort_order, 10);
+      form.elements.sort_order.value = Number.isFinite(sortOrder) ? sortOrder : "";
       form.elements.status.value = tutorial.status || "draft";
     }
 
     function getFormPayload() {
       const form = els.tutorialForm;
+      var sortOrder = parseInt(form.elements.sort_order.value, 10);
       return {
         slug: form.elements.slug.value.trim(),
         title: form.elements.title.value.trim(),
@@ -2181,6 +2205,7 @@
         content: form.elements.content.value,
         cover_url: form.elements.cover_url.value.trim(),
         tags: parseTags(form.elements.tags.value),
+        sort_order: Number.isFinite(sortOrder) ? sortOrder : 999,
         status: form.elements.status.value,
         updated_at: new Date().toISOString()
       };
@@ -2352,7 +2377,7 @@
       if (!session || !session.access_token) return;
       setLoading(document.getElementById("resourceRefreshButton"), "读取中...", true);
       try {
-        resources = await requestSupabase("/rest/v1/resources?select=*&order=created_at.desc", {
+        resources = await requestSupabase("/rest/v1/resources?select=*&order=sort_order.asc,created_at.desc", {
           method: "GET",
           headers: authHeaders()
         });
@@ -2405,6 +2430,7 @@
               '<span class="sb-badge">分类：' + escapeHtml(resource.category || "未分类") + '</span>',
               '<span class="sb-badge ' + escapeHtml(status) + '">发布：' + escapeHtml(status === "published" ? "已发布" : "草稿") + '</span>',
               '<span class="sb-badge">资源：' + escapeHtml(resourceStatus) + '</span>',
+              '<span class="sb-badge">排序：' + escapeHtml(resource.sort_order != null ? resource.sort_order : 999) + '</span>',
               '<span>更新时间：' + escapeHtml(formatDate(resource.updated_at)) + '</span>',
             '</div>',
             '<div class="sb-list-actions">',
@@ -2418,6 +2444,7 @@
 
     function getResourceFormPayload() {
       var form = document.getElementById("resourceForm");
+      var sortOrder = parseInt(form.elements.sort_order.value, 10);
       return {
         slug: form.elements.slug.value.trim(),
         title: form.elements.title.value.trim(),
@@ -2435,6 +2462,7 @@
         faq: form.elements.faq.value,
         tags: parseTags(form.elements.tags.value),
         resource_status: form.elements.resource_status.value,
+        sort_order: Number.isFinite(sortOrder) ? sortOrder : 999,
         status: form.elements.status.value,
         updated_at: new Date().toISOString()
       };
@@ -2458,6 +2486,8 @@
       form.elements.faq.value = Array.isArray(resource.faq) ? resource.faq.map(function(f) { return (f.question || "") + "：" + (f.answer || ""); }).join("\n") : (resource.faq || "");
       form.elements.tags.value = tagsToInput(resource.tags);
       form.elements.resource_status.value = resource.resource_status || "整理中";
+      var sortOrder = parseInt(resource.sort_order, 10);
+      form.elements.sort_order.value = Number.isFinite(sortOrder) ? sortOrder : "";
       form.elements.status.value = resource.status || "draft";
     }
 
@@ -3013,7 +3043,7 @@
       if (!session || !session.access_token) return;
       setLoading(document.getElementById("caseRefreshButton"), "读取中...", true);
       try {
-        cases = await requestSupabase("/rest/v1/cases?select=*&order=created_at.desc", {
+        cases = await requestSupabase("/rest/v1/cases?select=*&order=sort_order.asc,created_at.desc", {
           method: "GET",
           headers: authHeaders()
         });
@@ -3066,6 +3096,7 @@
               '<span class="sb-badge">分类：' + escapeHtml(caseItem.category || "未分类") + '</span>',
               '<span class="sb-badge ' + escapeHtml(status) + '">发布：' + escapeHtml(status === "published" ? "已发布" : "草稿") + '</span>',
               '<span class="sb-badge">案例：' + escapeHtml(caseStatus) + '</span>',
+              '<span class="sb-badge">排序：' + escapeHtml(caseItem.sort_order != null ? caseItem.sort_order : 999) + '</span>',
               '<span>更新时间：' + escapeHtml(formatDate(caseItem.updated_at)) + '</span>',
             '</div>',
             '<div class="sb-list-actions">',
@@ -3079,6 +3110,7 @@
 
     function getCaseFormPayload() {
       var form = document.getElementById("caseForm");
+      var sortOrder = parseInt(form.elements.sort_order.value, 10);
       return {
         slug: form.elements.slug.value.trim(),
         title: form.elements.title.value.trim(),
@@ -3094,6 +3126,7 @@
         cover_url: form.elements.cover_url.value.trim(),
         tags: parseTags(form.elements.tags.value),
         case_status: form.elements.case_status.value,
+        sort_order: Number.isFinite(sortOrder) ? sortOrder : 999,
         status: form.elements.status.value,
         updated_at: new Date().toISOString()
       };
@@ -3115,6 +3148,8 @@
       form.elements.cover_url.value = caseItem.cover_url || "";
       form.elements.tags.value = tagsToInput(caseItem.tags);
       form.elements.case_status.value = caseItem.case_status || "展示中";
+      var sortOrder = parseInt(caseItem.sort_order, 10);
+      form.elements.sort_order.value = Number.isFinite(sortOrder) ? sortOrder : "";
       form.elements.status.value = caseItem.status || "draft";
     }
 
@@ -3534,7 +3569,7 @@
       if (!session || !session.access_token) return;
       setLoading(document.getElementById("toolRefreshButton"), "读取中...", true);
       try {
-        tools = await requestSupabase("/rest/v1/tools?select=*&order=created_at.desc", {
+        tools = await requestSupabase("/rest/v1/tools?select=*&order=sort_order.asc,created_at.desc", {
           method: "GET",
           headers: authHeaders()
         });
@@ -3587,6 +3622,7 @@
               '<span class="sb-badge">分类：' + escapeHtml(tool.category || "未分类") + '</span>',
               '<span class="sb-badge ' + escapeHtml(status) + '">发布：' + escapeHtml(status === "published" ? "已发布" : "草稿") + '</span>',
               '<span class="sb-badge">状态：' + escapeHtml(toolStatus) + '</span>',
+              '<span class="sb-badge">排序：' + escapeHtml(tool.sort_order != null ? tool.sort_order : 999) + '</span>',
               '<span>更新时间：' + escapeHtml(formatDate(tool.updated_at)) + '</span>',
             '</div>',
             '<div class="sb-list-actions">',
@@ -3600,6 +3636,7 @@
 
     function getToolFormPayload() {
       var form = document.getElementById("toolForm");
+      var sortOrder = parseInt(form.elements.sort_order.value, 10);
       return {
         slug: form.elements.slug.value.trim(),
         name: form.elements.name.value.trim(),
@@ -3612,6 +3649,7 @@
         cover_url: form.elements.cover_url.value.trim(),
         tags: parseTags(form.elements.tags.value),
         tool_status: form.elements.tool_status.value,
+        sort_order: Number.isFinite(sortOrder) ? sortOrder : 999,
         status: form.elements.status.value,
         updated_at: new Date().toISOString()
       };
@@ -3630,6 +3668,8 @@
       form.elements.cover_url.value = tool.cover_url || "";
       form.elements.tags.value = tagsToInput(tool.tags);
       form.elements.tool_status.value = tool.tool_status || "整理中";
+      var sortOrder = parseInt(tool.sort_order, 10);
+      form.elements.sort_order.value = Number.isFinite(sortOrder) ? sortOrder : "";
       form.elements.status.value = tool.status || "draft";
     }
 

@@ -8,6 +8,19 @@ const DATA_PATHS = {
 
 const PLACEHOLDER_LINK_MESSAGE = "该内容正在整理中，后续会更新真实链接。";
 
+// 客户端排序兜底：sort_order asc (null/缺失 → 999)，再按 updated_at desc
+function sortBySortOrder(items) {
+  if (!Array.isArray(items) || items.length < 2) return items;
+  return items.slice().sort(function(a, b) {
+    var aOrder = Number.isFinite(Number(a.sort_order ?? a.sortOrder)) ? Number(a.sort_order ?? a.sortOrder) : 999;
+    var bOrder = Number.isFinite(Number(b.sort_order ?? b.sortOrder)) ? Number(b.sort_order ?? b.sortOrder) : 999;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    var aTime = new Date(a.updatedAt || a.updated_at || 0).getTime();
+    var bTime = new Date(b.updatedAt || b.updated_at || 0).getTime();
+    return bTime - aTime;
+  });
+}
+
 const FALLBACK_DATA = {
   tools: [
     { id: "tool-chatgpt", name: "ChatGPT", category: "AI 对话", description: "通用型 AI 助手，适合写作、分析、学习和项目构思。", suitableFor: "新手、内容创作者、项目负责人", usageTip: "先用于需求整理和方案拆解，再接入具体工具执行。", officialUrl: "#", tutorialUrl: "#", tags: ["AI 对话", "写作"], status: "推荐", updatedAt: "2026-05-14" },
@@ -346,6 +359,8 @@ function normalizeSupabaseTutorial(row) {
     detailContent: firstValue(row?.content, summary, "正文内容正在整理中。"),
     coverUrl: row?.cover_url || "",
     tags,
+    sort_order: row?.sort_order,
+    sortOrder: row?.sort_order,
     status: row?.status || "",
     updatedAt: firstValue(row?.updated_at, row?.created_at),
     createdAt: row?.created_at || "",
@@ -354,7 +369,7 @@ function normalizeSupabaseTutorial(row) {
 }
 
 async function loadSupabaseTutorials() {
-  const rows = await fetchSupabaseTutorialRows("select=*&status=eq.published&order=updated_at.desc");
+  const rows = await fetchSupabaseTutorialRows("select=*&status=eq.published&order=sort_order.asc,updated_at.desc");
   if (!rows) return null;
   return Array.isArray(rows) ? rows.map(normalizeSupabaseTutorial) : [];
 }
@@ -404,6 +419,8 @@ function normalizeSupabaseResource(row) {
     usage_steps: row?.usage_steps || null,
     faq: row?.faq || null,
     resourceStatus: firstValue(row?.resource_status, "整理中"),
+    sort_order: row?.sort_order,
+    sortOrder: row?.sort_order,
     status: row?.status || "draft",
     updatedAt: firstValue(row?.updated_at, row?.created_at),
     createdAt: row?.created_at || "",
@@ -413,7 +430,7 @@ function normalizeSupabaseResource(row) {
 
 async function loadSupabaseResources() {
   try {
-    const rows = await fetchSupabaseResourceRows("select=*&status=eq.published&order=updated_at.desc");
+    const rows = await fetchSupabaseResourceRows("select=*&status=eq.published&order=sort_order.asc,updated_at.desc");
     if (!rows) return null;
     return Array.isArray(rows) ? rows.map(normalizeSupabaseResource) : [];
   } catch (error) {
@@ -500,6 +517,8 @@ function normalizeSupabaseCase(row) {
     imageUrl: row?.cover_url || "",
     detailUrl: row?.slug ? "case-detail.html?slug=" + encodeURIComponent(row.slug) : "#",
     tags: tags,
+    sort_order: row?.sort_order,
+    sortOrder: row?.sort_order,
     updatedAt: firstValue(row?.updated_at, row?.created_at),
     createdAt: row?.created_at || "",
     background: firstValue(row?.background, ""),
@@ -515,7 +534,7 @@ function normalizeSupabaseCase(row) {
 
 async function loadSupabaseCases() {
   try {
-    const rows = await fetchSupabaseCaseRows("select=*&status=eq.published&order=updated_at.desc");
+    const rows = await fetchSupabaseCaseRows("select=*&status=eq.published&order=sort_order.asc,updated_at.desc");
     if (!rows) return null;
     return Array.isArray(rows) ? rows.map(normalizeSupabaseCase) : [];
   } catch (error) {
@@ -590,6 +609,8 @@ function normalizeSupabaseTool(row) {
     tool_status: firstValue(row?.tool_status, "整理中"),
     status: firstValue(row?.tool_status, "整理中"),
     publishStatus: row?.status || "draft",
+    sort_order: row?.sort_order,
+    sortOrder: row?.sort_order,
     updatedAt: firstValue(row?.updated_at, row?.created_at),
     createdAt: row?.created_at || "",
     source: "supabase"
@@ -598,7 +619,7 @@ function normalizeSupabaseTool(row) {
 
 async function loadSupabaseTools() {
   try {
-    const rows = await fetchSupabaseToolRows("select=*&status=eq.published&order=updated_at.desc");
+    const rows = await fetchSupabaseToolRows("select=*&status=eq.published&order=sort_order.asc,updated_at.desc");
     if (!rows) return null;
     return Array.isArray(rows) ? rows.map(normalizeSupabaseTool) : [];
   } catch (error) {
@@ -1232,8 +1253,8 @@ async function renderTools(container, items, source) {
     return;
   }
 
-  // Store items for dynamic filtering
-  container._toolsData = toolItems;
+  // Store items for dynamic filtering (client-side sort as fallback)
+  container._toolsData = sortBySortOrder(toolItems);
   renderToolCards(container);
 }
 
@@ -1574,7 +1595,7 @@ async function renderResources(container, items, source) {
   }
 
   showDataNotice(container, resourceSource === "fallback" ? "fallback" : "supabase");
-  resourceFilterState.items = resources;
+  resourceFilterState.items = sortBySortOrder(resources);
   resourceFilterState.source = resourceSource;
   resourceFilterState.activeCategory = "all";
   resourceFilterState.activeScene = "all";
@@ -1615,6 +1636,7 @@ async function renderTutorials(container, items, source) {
     container.innerHTML = emptyState("教程正在整理中。", "请稍后再来查看新的实战教程。");
     return;
   }
+  tutorials = sortBySortOrder(tutorials);
   container.innerHTML = tutorials.map((item) => {
     const tags = Array.isArray(item.tags) ? item.tags : [];
     return `
@@ -1660,6 +1682,7 @@ async function renderCases(container, items, source) {
   }
 
   showDataNotice(container, caseSource === "fallback" ? "fallback" : "supabase");
+  caseItems = sortBySortOrder(caseItems);
   container.innerHTML = caseItems.map(function(item) {
     var image = item.imageUrl
       ? '<img src="' + escapeHTML(item.imageUrl) + '" alt="' + escapeHTML(item.title) + '">'
