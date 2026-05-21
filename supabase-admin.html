@@ -721,6 +721,68 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* ── Cover Section ── */
+    .sb-cover-section {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .sb-cover-section.drag-active {
+      border-color: rgba(105, 226, 255, 0.68);
+      box-shadow: 0 0 0 3px rgba(105, 226, 255, 0.12), 0 16px 38px rgba(77, 185, 255, 0.14);
+      background: rgba(105, 226, 255, 0.06);
+    }
+
+    .sb-cover-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+      max-height: 160px;
+      border-radius: var(--radius-sm);
+      background: rgba(4, 9, 28, 0.5);
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .sb-cover-preview img {
+      max-width: 100%;
+      max-height: 160px;
+      object-fit: contain;
+    }
+
+    .sb-cover-placeholder {
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 28px 16px;
+    }
+
+    .sb-cover-placeholder.error {
+      color: #ffb3b3;
+    }
+
+    .sb-cover-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .sb-button.weak-danger {
+      color: #ffb3b3;
+      border-color: rgba(255, 150, 150, 0.25);
+    }
+
+    .sb-button.weak-danger:hover {
+      color: #ff9999;
+      background: rgba(255, 100, 100, 0.12);
+      border-color: rgba(255, 140, 140, 0.5);
+    }
   </style>
 </head>
 <body class="supabase-admin-page">
@@ -907,29 +969,22 @@
               <input name="tutorial_url" type="url" placeholder="tutorial-detail.html?slug=xxx">
               <small>如果这个工具有配套教程，可以填写教程详情页链接。</small>
             </label>
-            <label class="sb-field">
-              封面图链接
-              <input name="cover_url" type="url" placeholder="https://example.com/cover.jpg">
-              <small>填写图片网址；没有封面时可以先留空。</small>
-            </label>
-            <div class="sb-upload-box" id="toolImageUploadBox">
-              <p class="sb-drop-hint">可点击上传，也可以把 png / jpg / webp / gif 图片拖到这里，上传后链接会自动写入封面图字段。</p>
+            <div class="sb-cover-section" id="toolCoverSection">
+              <div class="sb-cover-preview">
+                <img id="toolCoverPreviewImg" src="" alt="封面预览" style="display:none">
+                <div id="toolCoverPlaceholder" class="sb-cover-placeholder">暂无封面图</div>
+              </div>
               <label class="sb-field" style="margin: 0;">
-                图片说明
-                <input id="toolImageAltInput" type="text" placeholder="例如：ChatGPT 截图">
+                封面图链接
+                <input name="cover_url" type="url" placeholder="https://example.com/cover.jpg">
+                <small>可粘贴图片链接，或通过下方按钮上传。保存后生效。</small>
               </label>
-              <div class="sb-actions" style="margin: 0;">
-                <input id="toolImageFileInput" class="sb-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-                <button id="toolUploadImageButton" class="sb-button ghost" type="button">上传封面图</button>
+              <div class="sb-cover-actions">
+                <input id="toolCoverFileInput" class="sb-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+                <button id="toolCoverUploadButton" class="sb-button ghost" type="button">上传封面图</button>
+                <button id="toolCoverClearButton" class="sb-button weak-danger" type="button">清空封面图</button>
               </div>
-              <div id="toolUploadStatus" class="sb-upload-status">上传状态：未上传</div>
-              <div id="toolUploadPreview" class="sb-upload-preview">
-                <label class="sb-field" style="margin: 0;">
-                  上传成功后的图片链接
-                  <input id="toolUploadedImageUrl" type="url" readonly>
-                </label>
-                <button id="toolUseCoverButton" class="sb-button ghost" type="button">设为封面图</button>
-              </div>
+              <div id="toolCoverStatus" class="sb-upload-status"></div>
             </div>
             <label class="sb-field full">
               标签
@@ -1059,11 +1114,23 @@
               <input name="tutorial_url" type="url" placeholder="tutorial-detail.html?slug=xxx 或完整链接">
               <small>配套教程的详情页链接。没有可以留空，前台不显示该按钮。</small>
             </label>
-            <label class="sb-field">
-              封面图链接
-              <input name="cover_url" type="url" placeholder="https://example.com/cover.jpg">
-              <small>资源封面图 URL。没有可以留空。</small>
-            </label>
+            <div class="sb-cover-section" id="resourceCoverSection">
+              <div class="sb-cover-preview">
+                <img id="resourceCoverPreviewImg" src="" alt="封面预览" style="display:none">
+                <div id="resourceCoverPlaceholder" class="sb-cover-placeholder">暂无封面图</div>
+              </div>
+              <label class="sb-field" style="margin: 0;">
+                封面图链接
+                <input name="cover_url" type="url" placeholder="https://example.com/cover.jpg">
+                <small>可粘贴图片链接，或通过下方按钮上传。保存后生效。</small>
+              </label>
+              <div class="sb-cover-actions">
+                <input id="resourceCoverFileInput" class="sb-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+                <button id="resourceCoverUploadButton" class="sb-button ghost" type="button">上传封面图</button>
+                <button id="resourceCoverClearButton" class="sb-button weak-danger" type="button">清空封面图</button>
+              </div>
+              <div id="resourceCoverStatus" class="sb-upload-status"></div>
+            </div>
             <label class="sb-field full">
               资源简介
               <textarea name="description" placeholder="一句话说明这个资源解决什么问题。&#10;不要写安装步骤、不要写 FAQ。&#10;&#10;例如：&#10;适合新手快速整理 Codex 建站需求，避免和 AI 沟通不清。&#10;一键查询、修改和清理数据库中重复数据的 SQL 模板集合。"></textarea>
@@ -1080,27 +1147,7 @@
               </div>
               <textarea name="detail_content" placeholder="详细说明这个资源是什么、适合什么场景、能解决什么问题、大概包含什么内容。&#10;支持 Markdown。&#10;&#10;注意：不要把使用步骤、注意事项、FAQ 堆在这里——它们有各自的字段，前台会自动分开展示。"></textarea>
               <small>对应前台「资源说明」区块。写资源背景、适用场景、包含内容。不要把使用步骤 / 注意事项 / FAQ 混进来，它们各自有独立区块。</small>
-            </label>
-            <div class="sb-upload-box" id="resourceImageUploadBox">
-              <p class="sb-drop-hint">可点击上传，也可以把 png / jpg / webp / gif 图片拖到这里，上传后链接会自动写入封面图字段。</p>
-              <label class="sb-field" style="margin: 0;">
-                图片说明
-                <input id="resourceImageAltInput" type="text" placeholder="例如：Codex 提示词模板封面">
-              </label>
-              <div class="sb-actions" style="margin: 0;">
-                <input id="resourceImageFileInput" class="sb-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-                <button id="resourceUploadImageButton" class="sb-button ghost" type="button">上传封面图</button>
-              </div>
-              <div id="resourceUploadStatus" class="sb-upload-status">上传状态：未上传</div>
-              <div id="resourceUploadPreview" class="sb-upload-preview">
-                <label class="sb-field" style="margin: 0;">
-                  上传成功后的图片链接
-                  <input id="resourceUploadedImageUrl" type="url" readonly>
-                </label>
-                <button id="resourceUseCoverButton" class="sb-button ghost" type="button">设为封面图</button>
-              </div>
-            </div>
-            <label class="sb-field full">
+            </label>            <label class="sb-field full">
               使用方法
               <textarea name="usage_steps" placeholder="每行一个步骤。适合任何资源类型：&#10;&#10;提示词模板：复制模板 → 替换项目信息 → 发给 AI&#10;SQL 模板：打开 Supabase → SQL Editor → 粘贴执行&#10;部署清单：按清单逐项检查&#10;工作流：下载文件 → 放到对应目录 → 导入工作流&#10;项目包：解压 → 阅读说明 → 按步骤配置"></textarea>
               <small>对应前台「使用方法」区块。每行一个步骤。只写下载后怎么用，不要写资源说明或 FAQ。留空则前台不显示该区块。</small>
@@ -1211,11 +1258,23 @@
             <input name="reading_time" type="text" placeholder="10 分钟">
             <small>可以写“10 分钟”“约 15 分钟”等。</small>
           </label>
-          <label class="sb-field">
-            封面图链接
-            <input name="cover_url" type="url" placeholder="https://example.com/cover.jpg">
-            <small>填写图片网址；没有封面时可以先留空。</small>
-          </label>
+          <div class="sb-cover-section" id="tutorialCoverSection">
+            <div class="sb-cover-preview">
+              <img id="tutorialCoverPreviewImg" src="" alt="封面预览" style="display:none">
+              <div id="tutorialCoverPlaceholder" class="sb-cover-placeholder">暂无封面图</div>
+            </div>
+            <label class="sb-field" style="margin: 0;">
+              封面图链接
+              <input name="cover_url" type="url" placeholder="https://example.com/cover.jpg">
+              <small>可粘贴图片链接，或通过下方按钮上传。保存后生效。</small>
+            </label>
+            <div class="sb-cover-actions">
+              <input id="tutorialCoverFileInput" class="sb-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+              <button id="tutorialCoverUploadButton" class="sb-button ghost" type="button">上传封面图</button>
+              <button id="tutorialCoverClearButton" class="sb-button weak-danger" type="button">清空封面图</button>
+            </div>
+            <div id="tutorialCoverStatus" class="sb-upload-status"></div>
+          </div>
           <label class="sb-field full">
             教程简介
             <textarea name="summary" placeholder="教程简介"></textarea>
@@ -1359,11 +1418,23 @@
               <input name="tools_used" type="text" placeholder="Codex,ComfyUI,Claude Code">
               <small>多个工具请用英文逗号分隔，例如：Codex,ComfyUI,Claude Code。</small>
             </label>
-            <label class="sb-field">
-              封面图链接
-              <input name="cover_url" type="url" placeholder="https://example.com/cover.jpg">
-              <small>填写图片网址；没有封面时可以先留空。</small>
-            </label>
+            <div class="sb-cover-section" id="caseCoverSection">
+              <div class="sb-cover-preview">
+                <img id="caseCoverPreviewImg" src="" alt="封面预览" style="display:none">
+                <div id="caseCoverPlaceholder" class="sb-cover-placeholder">暂无封面图</div>
+              </div>
+              <label class="sb-field" style="margin: 0;">
+                封面图链接
+                <input name="cover_url" type="url" placeholder="https://example.com/cover.jpg">
+                <small>可粘贴图片链接，或通过下方按钮上传。保存后生效。</small>
+              </label>
+              <div class="sb-cover-actions">
+                <input id="caseCoverFileInput" class="sb-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+                <button id="caseCoverUploadButton" class="sb-button ghost" type="button">上传封面图</button>
+                <button id="caseCoverClearButton" class="sb-button weak-danger" type="button">清空封面图</button>
+              </div>
+              <div id="caseCoverStatus" class="sb-upload-status"></div>
+            </div>
             <label class="sb-field full">
               案例简介
               <textarea name="summary" placeholder="用一两句话说明这个案例是什么、解决什么问题。"></textarea>
@@ -1402,27 +1473,7 @@
               后续升级
               <textarea name="upgrades" placeholder="描述后续可以升级或扩展的方向。每行一个升级项。"></textarea>
               <small>每行写一个升级方向，前台会自动转为列表展示。</small>
-            </label>
-            <div class="sb-upload-box" id="caseImageUploadBox">
-              <p class="sb-drop-hint">可点击上传，也可以把 png / jpg / webp / gif 图片拖到这里，上传后链接会自动写入封面图字段。</p>
-              <label class="sb-field" style="margin: 0;">
-                图片说明
-                <input id="caseImageAltInput" type="text" placeholder="例如：项目截图">
-              </label>
-              <div class="sb-actions" style="margin: 0;">
-                <input id="caseImageFileInput" class="sb-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-                <button id="caseUploadImageButton" class="sb-button ghost" type="button">上传封面图</button>
-              </div>
-              <div id="caseUploadStatus" class="sb-upload-status">上传状态：未上传</div>
-              <div id="caseUploadPreview" class="sb-upload-preview">
-                <label class="sb-field" style="margin: 0;">
-                  上传成功后的图片链接
-                  <input id="caseUploadedImageUrl" type="url" readonly>
-                </label>
-                <button id="caseUseCoverButton" class="sb-button ghost" type="button">设为封面图</button>
-              </div>
-            </div>
-            <label class="sb-field full">
+            </label>            <label class="sb-field full">
               标签
               <input name="tags" type="text" placeholder="小商户工具,会员管理,已完成">
               <small>多个标签请用英文逗号分隔，例如：小商户工具,会员管理,已完成。</small>
@@ -1528,6 +1579,45 @@
 
     function isPlaceholder(value) {
       return !value || String(value).includes("这里填");
+    }
+
+    function updateCoverPreview(prefix, url) {
+      var img = document.getElementById(prefix + "CoverPreviewImg");
+      var placeholder = document.getElementById(prefix + "CoverPlaceholder");
+      var uploadBtn = document.getElementById(prefix + "CoverUploadButton");
+      if (!img || !placeholder || !uploadBtn) return;
+      if (url) {
+        img.src = url;
+        img.style.display = "block";
+        img.onerror = function() {
+          img.style.display = "none";
+          placeholder.style.display = "flex";
+          placeholder.textContent = "图片加载失败，请检查链接";
+          placeholder.className = "sb-cover-placeholder error";
+        };
+        img.onload = function() {
+          img.style.display = "block";
+          placeholder.style.display = "none";
+        };
+        placeholder.style.display = "none";
+        uploadBtn.textContent = "更换封面图";
+      } else {
+        img.src = "";
+        img.style.display = "none";
+        img.onerror = null;
+        img.onload = null;
+        placeholder.style.display = "flex";
+        placeholder.textContent = "暂无封面图";
+        placeholder.className = "sb-cover-placeholder";
+        uploadBtn.textContent = "上传封面图";
+      }
+    }
+
+    function setCoverStatus(prefix, type, message) {
+      var el = document.getElementById(prefix + "CoverStatus");
+      if (!el) return;
+      el.className = "sb-upload-status" + (type ? " " + type : "");
+      el.textContent = message;
     }
 
     function getConfig() {
@@ -2007,6 +2097,54 @@
       uploadSelectedImage(file);
     }
 
+    // ── 教程封面图上传 / 清空 ──
+    function handleTutorialCoverUploadClick() {
+      if (!session || !session.access_token) {
+        setCoverStatus("tutorial", "error", "请先登录后再上传图片。");
+        return;
+      }
+      document.getElementById("tutorialCoverFileInput").click();
+    }
+
+    async function handleTutorialCoverFileSelected(fileFromDrop) {
+      var fileInput = document.getElementById("tutorialCoverFileInput");
+      var file = fileFromDrop instanceof File ? fileFromDrop : (fileInput.files && fileInput.files[0]);
+      if (!file) return;
+
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        setCoverStatus("tutorial", "error", "只支持 png、jpg、webp、gif 图片。");
+        fileInput.value = "";
+        return;
+      }
+
+      var sizeWarning = file.size > IMAGE_SIZE_WARN_BYTES
+        ? "图片较大，建议先压缩后再上传。仍会继续上传。\n"
+        : "";
+      var uploadButton = document.getElementById("tutorialCoverUploadButton");
+      setLoading(uploadButton, "上传中...", true);
+      setCoverStatus("tutorial", file.size > IMAGE_SIZE_WARN_BYTES ? "warn" : "", sizeWarning + "上传中...");
+
+      try {
+        var filePath = buildImagePath(file);
+        var result = await uploadImageFile(file, filePath);
+        var publicUrl = result.publicUrl;
+        els.tutorialForm.elements.cover_url.value = publicUrl;
+        updateCoverPreview("tutorial", publicUrl);
+        setCoverStatus("tutorial", "success", "封面图已上传，保存后生效。");
+      } catch (error) {
+        setCoverStatus("tutorial", "error", friendlyUploadError(error.status || error.friendlyStatus, error.message));
+      } finally {
+        fileInput.value = "";
+        setLoading(uploadButton, "上传中...", false);
+      }
+    }
+
+    function handleTutorialCoverClear() {
+      els.tutorialForm.elements.cover_url.value = "";
+      updateCoverPreview("tutorial", "");
+      setCoverStatus("tutorial", "", "已清空封面链接，保存后前台不再显示封面。");
+    }
+
     function refreshConfigUi() {
       const config = getConfig();
       const hardcoded = config.source === "file";
@@ -2163,6 +2301,9 @@
       fillForm(tutorial || {});
       updatePreviewButton(tutorial && tutorial.slug ? { slug: tutorial.slug, status: tutorial.status || "draft" } : null);
       resetUploadUi();
+      updateCoverPreview("tutorial", tutorial ? tutorial.cover_url || "" : "");
+      setCoverStatus("tutorial", "", "");
+      document.getElementById("tutorialCoverFileInput").value = "";
       renderTutorialList();
     }
 
@@ -2190,6 +2331,12 @@
       var sortOrder = parseInt(tutorial.sort_order, 10);
       form.elements.sort_order.value = Number.isFinite(sortOrder) ? sortOrder : "";
       form.elements.status.value = tutorial.status || "draft";
+      updateCoverPreview("tutorial", tutorial.cover_url || "");
+      setCoverStatus("tutorial", "", "");
+    }
+
+    function updateTutorialCoverPreview() {
+      updateCoverPreview("tutorial", els.tutorialForm.elements.cover_url.value.trim());
     }
 
     function getFormPayload() {
@@ -2489,22 +2636,13 @@
       var sortOrder = parseInt(resource.sort_order, 10);
       form.elements.sort_order.value = Number.isFinite(sortOrder) ? sortOrder : "";
       form.elements.status.value = resource.status || "draft";
+      updateCoverPreview("resource", resource.cover_url || "");
+      setCoverStatus("resource", "", "");
     }
 
-    function resetResourceUploadUi() {
-      resourceContentCursor = null;
-      resourceLastUploadedUrl = "";
-      document.getElementById("resourceImageAltInput").value = "";
-      document.getElementById("resourceImageFileInput").value = "";
-      document.getElementById("resourceUploadedImageUrl").value = "";
-      document.getElementById("resourceUploadPreview").classList.remove("show");
-      setResourceUploadStatus("", session && session.access_token ? "上传状态：未上传" : "请先登录后再上传图片。");
-    }
-
-    function setResourceUploadStatus(type, message) {
-      var el = document.getElementById("resourceUploadStatus");
-      el.className = "sb-upload-status" + (type ? " " + type : "");
-      el.textContent = message;
+    function updateResourceCoverPreview() {
+      var form = document.getElementById("resourceForm");
+      updateCoverPreview("resource", form.elements.cover_url.value.trim());
     }
 
     function getResourceCurrentFormPreview() {
@@ -2542,7 +2680,11 @@
       document.getElementById("resourceEditorSubheading").textContent = resourceEditingId ? "正在编辑 ID：" + resourceEditingId : "保存后会写入 Supabase resources 表。";
       fillResourceForm(resource || {});
       updateResourcePreviewButton(resource && resource.slug ? { slug: resource.slug, status: resource.status || "draft" } : null);
-      resetResourceUploadUi();
+      updateCoverPreview("resource", resource ? resource.cover_url || "" : "");
+      setCoverStatus("resource", "", "");
+      resourceContentCursor = null;
+      resourceLastUploadedUrl = "";
+      document.getElementById("resourceCoverFileInput").value = "";
       renderResourceList();
     }
 
@@ -2592,12 +2734,12 @@
       insertResourceMarkdownAtCursor(snippets[type]);
     }
 
-    async function handleResourceImageUpload() {
+    async function handleResourceCoverUploadClick() {
       if (!session || !session.access_token) {
-        setResourceUploadStatus("error", "请先登录后再上传图片。");
+        setCoverStatus("resource", "error", "请先登录后再上传图片。");
         return;
       }
-      document.getElementById("resourceImageFileInput").click();
+      document.getElementById("resourceCoverFileInput").click();
     }
 
     function buildResourceImagePath(file) {
@@ -2668,13 +2810,13 @@
       return { publicUrl: getPublicImageUrl(filePath) };
     }
 
-    async function handleResourceUploadSelectedImage(fileFromDrop) {
-      var fileInput = document.getElementById("resourceImageFileInput");
+    async function handleResourceCoverFileSelected(fileFromDrop) {
+      var fileInput = document.getElementById("resourceCoverFileInput");
       var file = fileFromDrop instanceof File ? fileFromDrop : (fileInput.files && fileInput.files[0]);
       if (!file) return;
 
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        setResourceUploadStatus("error", "只支持 png、jpg、webp、gif 图片。");
+        setCoverStatus("resource", "error", "只支持 png、jpg、webp、gif 图片。");
         fileInput.value = "";
         return;
       }
@@ -2682,26 +2824,29 @@
       var sizeWarning = file.size > IMAGE_SIZE_WARN_BYTES
         ? "图片较大，建议先压缩后再上传。仍会继续上传。\n"
         : "";
-      var uploadButton = document.getElementById("resourceUploadImageButton");
+      var uploadButton = document.getElementById("resourceCoverUploadButton");
       setLoading(uploadButton, "上传中...", true);
-      setResourceUploadStatus(file.size > IMAGE_SIZE_WARN_BYTES ? "warn" : "", sizeWarning + "上传中...");
-      document.getElementById("resourceUploadPreview").classList.remove("show");
+      setCoverStatus("resource", file.size > IMAGE_SIZE_WARN_BYTES ? "warn" : "", sizeWarning + "上传中...");
 
       try {
         var result = await uploadResourceImageFile(file);
         var publicUrl = result.publicUrl;
         resourceLastUploadedUrl = publicUrl;
-        document.getElementById("resourceUploadedImageUrl").value = publicUrl;
-        document.getElementById("resourceUploadPreview").classList.add("show");
-        // 自动填入封面图链接
         document.getElementById("resourceForm").elements.cover_url.value = publicUrl;
-        setResourceUploadStatus("success", "上传成功，封面图链接已自动填入。");
+        updateCoverPreview("resource", publicUrl);
+        setCoverStatus("resource", "success", "封面图已上传，保存后生效。");
       } catch (error) {
-        setResourceUploadStatus("error", friendlyUploadError(error.status || error.friendlyStatus, error.message));
+        setCoverStatus("resource", "error", friendlyUploadError(error.status || error.friendlyStatus, error.message));
       } finally {
         fileInput.value = "";
         setLoading(uploadButton, "上传中...", false);
       }
+    }
+
+    function handleResourceCoverClear() {
+      document.getElementById("resourceForm").elements.cover_url.value = "";
+      updateCoverPreview("resource", "");
+      setCoverStatus("resource", "", "已清空封面链接，保存后前台不再显示封面。");
     }
 
     async function handleResourceSave(event) {
@@ -2817,6 +2962,41 @@
     els.imageUploadBox.addEventListener("dragover", handleUploadDragOver);
     els.imageUploadBox.addEventListener("dragleave", handleUploadDragLeave);
     els.imageUploadBox.addEventListener("drop", handleUploadDrop);
+    // 教程封面图上传 / 清空
+    document.getElementById("tutorialCoverUploadButton").addEventListener("click", handleTutorialCoverUploadClick);
+    document.getElementById("tutorialCoverFileInput").addEventListener("change", handleTutorialCoverFileSelected);
+    document.getElementById("tutorialCoverClearButton").addEventListener("click", handleTutorialCoverClear);
+    els.tutorialForm.elements.cover_url.addEventListener("input", updateTutorialCoverPreview);
+    // 教程封面图拖拽上传
+    var tutorialCoverBox = document.getElementById("tutorialCoverSection");
+    var tutorialCoverDragDepth = 0;
+    tutorialCoverBox.addEventListener("dragenter", function(event) {
+      event.preventDefault();
+      tutorialCoverDragDepth += 1;
+      tutorialCoverBox.classList.add("drag-active");
+    });
+    tutorialCoverBox.addEventListener("dragover", function(event) {
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+      tutorialCoverBox.classList.add("drag-active");
+    });
+    tutorialCoverBox.addEventListener("dragleave", function(event) {
+      event.preventDefault();
+      tutorialCoverDragDepth = Math.max(0, tutorialCoverDragDepth - 1);
+      if (tutorialCoverDragDepth === 0) tutorialCoverBox.classList.remove("drag-active");
+    });
+    tutorialCoverBox.addEventListener("drop", function(event) {
+      event.preventDefault();
+      tutorialCoverDragDepth = 0;
+      tutorialCoverBox.classList.remove("drag-active");
+      var files = Array.from(event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files : []);
+      var file = files.find(function(f) { return ALLOWED_IMAGE_TYPES.includes(f.type); }) || files[0] || null;
+      if (!file) {
+        setCoverStatus("tutorial", "error", "没有识别到可上传的图片文件。");
+        return;
+      }
+      handleTutorialCoverFileSelected(file);
+    });
     els.tutorialForm.addEventListener("click", function(event) {
       const button = event.target.closest("button[data-insert-markdown]");
       if (!button) return;
@@ -2899,14 +3079,10 @@
     document.getElementById("resourceStatusFilter").addEventListener("change", renderResourceList);
     document.getElementById("resourceResourceStatusFilter").addEventListener("change", renderResourceList);
     document.getElementById("resourceClearFiltersButton").addEventListener("click", resetResourceFilters);
-    document.getElementById("resourceUploadImageButton").addEventListener("click", handleResourceImageUpload);
-    document.getElementById("resourceImageFileInput").addEventListener("change", handleResourceUploadSelectedImage);
-    document.getElementById("resourceUseCoverButton").addEventListener("click", function() {
-      if (resourceLastUploadedUrl) {
-        document.getElementById("resourceForm").elements.cover_url.value = resourceLastUploadedUrl;
-        setResourceUploadStatus("success", "封面图链接已设置。");
-      }
-    });
+    document.getElementById("resourceCoverUploadButton").addEventListener("click", handleResourceCoverUploadClick);
+    document.getElementById("resourceCoverFileInput").addEventListener("change", handleResourceCoverFileSelected);
+    document.getElementById("resourceCoverClearButton").addEventListener("click", handleResourceCoverClear);
+    document.getElementById("resourceForm").elements.cover_url.addEventListener("input", updateResourceCoverPreview);
     document.getElementById("resourceRefreshButton").addEventListener("click", fetchResources);
     document.getElementById("resourceNewButton").addEventListener("click", function() {
       clearNotice();
@@ -2948,33 +3124,33 @@
     });
 
     // ── 资源图片拖拽上传 ──
-    var resourceUploadBox = document.getElementById("resourceImageUploadBox");
-    resourceUploadBox.addEventListener("dragenter", function(event) {
+    var resourceCoverBox = document.getElementById("resourceCoverSection");
+    resourceCoverBox.addEventListener("dragenter", function(event) {
       event.preventDefault();
       resourceDragDepth += 1;
-      resourceUploadBox.classList.add("drag-active");
+      resourceCoverBox.classList.add("drag-active");
     });
-    resourceUploadBox.addEventListener("dragover", function(event) {
+    resourceCoverBox.addEventListener("dragover", function(event) {
       event.preventDefault();
       if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
-      resourceUploadBox.classList.add("drag-active");
+      resourceCoverBox.classList.add("drag-active");
     });
-    resourceUploadBox.addEventListener("dragleave", function(event) {
+    resourceCoverBox.addEventListener("dragleave", function(event) {
       event.preventDefault();
       resourceDragDepth = Math.max(0, resourceDragDepth - 1);
-      if (resourceDragDepth === 0) resourceUploadBox.classList.remove("drag-active");
+      if (resourceDragDepth === 0) resourceCoverBox.classList.remove("drag-active");
     });
-    resourceUploadBox.addEventListener("drop", function(event) {
+    resourceCoverBox.addEventListener("drop", function(event) {
       event.preventDefault();
       resourceDragDepth = 0;
-      resourceUploadBox.classList.remove("drag-active");
+      resourceCoverBox.classList.remove("drag-active");
       var files = Array.from(event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files : []);
       var file = files.find(function(f) { return ALLOWED_IMAGE_TYPES.includes(f.type); }) || files[0] || null;
       if (!file) {
-        setResourceUploadStatus("error", "没有识别到可上传的图片文件。");
+        setCoverStatus("resource", "error", "没有识别到可上传的图片文件。");
         return;
       }
-      handleResourceUploadSelectedImage(file);
+      handleResourceCoverFileSelected(file);
     });
 
     // ============================================================
@@ -3151,21 +3327,13 @@
       var sortOrder = parseInt(caseItem.sort_order, 10);
       form.elements.sort_order.value = Number.isFinite(sortOrder) ? sortOrder : "";
       form.elements.status.value = caseItem.status || "draft";
+      updateCoverPreview("case", caseItem.cover_url || "");
+      setCoverStatus("case", "", "");
     }
 
-    function resetCaseUploadUi() {
-      caseLastUploadedUrl = "";
-      document.getElementById("caseImageAltInput").value = "";
-      document.getElementById("caseImageFileInput").value = "";
-      document.getElementById("caseUploadedImageUrl").value = "";
-      document.getElementById("caseUploadPreview").classList.remove("show");
-      setCaseUploadStatus("", session && session.access_token ? "上传状态：未上传" : "请先登录后再上传图片。");
-    }
-
-    function setCaseUploadStatus(type, message) {
-      var el = document.getElementById("caseUploadStatus");
-      el.className = "sb-upload-status" + (type ? " " + type : "");
-      el.textContent = message;
+    function updateCaseCoverPreview() {
+      var form = document.getElementById("caseForm");
+      updateCoverPreview("case", form.elements.cover_url.value.trim());
     }
 
     function getCaseCurrentFormPreview() {
@@ -3203,7 +3371,10 @@
       document.getElementById("caseEditorSubheading").textContent = caseEditingId ? "正在编辑 ID：" + caseEditingId : "保存后会写入 Supabase cases 表。";
       fillCaseForm(caseItem || {});
       updateCasePreviewButton(caseItem && caseItem.slug ? { slug: caseItem.slug, status: caseItem.status || "draft" } : null);
-      resetCaseUploadUi();
+      updateCoverPreview("case", caseItem ? caseItem.cover_url || "" : "");
+      setCoverStatus("case", "", "");
+      caseLastUploadedUrl = "";
+      document.getElementById("caseCoverFileInput").value = "";
       renderCaseList();
     }
 
@@ -3275,21 +3446,21 @@
       return { publicUrl: getPublicImageUrl(filePath) };
     }
 
-    async function handleCaseImageUpload() {
+    async function handleCaseCoverUploadClick() {
       if (!session || !session.access_token) {
-        setCaseUploadStatus("error", "请先登录后再上传图片。");
+        setCoverStatus("case", "error", "请先登录后再上传图片。");
         return;
       }
-      document.getElementById("caseImageFileInput").click();
+      document.getElementById("caseCoverFileInput").click();
     }
 
-    async function handleCaseUploadSelectedImage(fileFromDrop) {
-      var fileInput = document.getElementById("caseImageFileInput");
+    async function handleCaseCoverFileSelected(fileFromDrop) {
+      var fileInput = document.getElementById("caseCoverFileInput");
       var file = fileFromDrop instanceof File ? fileFromDrop : (fileInput.files && fileInput.files[0]);
       if (!file) return;
 
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        setCaseUploadStatus("error", "只支持 png、jpg、webp、gif 图片。");
+        setCoverStatus("case", "error", "只支持 png、jpg、webp、gif 图片。");
         fileInput.value = "";
         return;
       }
@@ -3297,25 +3468,29 @@
       var sizeWarning = file.size > IMAGE_SIZE_WARN_BYTES
         ? "图片较大，建议先压缩后再上传。仍会继续上传。\n"
         : "";
-      var uploadButton = document.getElementById("caseUploadImageButton");
+      var uploadButton = document.getElementById("caseCoverUploadButton");
       setLoading(uploadButton, "上传中...", true);
-      setCaseUploadStatus(file.size > IMAGE_SIZE_WARN_BYTES ? "warn" : "", sizeWarning + "上传中...");
-      document.getElementById("caseUploadPreview").classList.remove("show");
+      setCoverStatus("case", file.size > IMAGE_SIZE_WARN_BYTES ? "warn" : "", sizeWarning + "上传中...");
 
       try {
         var result = await uploadCaseImageFile(file);
         var publicUrl = result.publicUrl;
         caseLastUploadedUrl = publicUrl;
-        document.getElementById("caseUploadedImageUrl").value = publicUrl;
-        document.getElementById("caseUploadPreview").classList.add("show");
         document.getElementById("caseForm").elements.cover_url.value = publicUrl;
-        setCaseUploadStatus("success", "上传成功，封面图链接已自动填入。");
+        updateCoverPreview("case", publicUrl);
+        setCoverStatus("case", "success", "封面图已上传，保存后生效。");
       } catch (error) {
-        setCaseUploadStatus("error", friendlyUploadError(error.status || error.friendlyStatus, error.message));
+        setCoverStatus("case", "error", friendlyUploadError(error.status || error.friendlyStatus, error.message));
       } finally {
         fileInput.value = "";
         setLoading(uploadButton, "上传中...", false);
       }
+    }
+
+    function handleCaseCoverClear() {
+      document.getElementById("caseForm").elements.cover_url.value = "";
+      updateCoverPreview("case", "");
+      setCoverStatus("case", "", "已清空封面链接，保存后前台不再显示封面。");
     }
 
     async function handleCaseSave(event) {
@@ -3400,14 +3575,10 @@
     document.getElementById("caseStatusFilter").addEventListener("change", renderCaseList);
     document.getElementById("caseCaseStatusFilter").addEventListener("change", renderCaseList);
     document.getElementById("caseClearFiltersButton").addEventListener("click", resetCaseFilters);
-    document.getElementById("caseUploadImageButton").addEventListener("click", handleCaseImageUpload);
-    document.getElementById("caseImageFileInput").addEventListener("change", handleCaseUploadSelectedImage);
-    document.getElementById("caseUseCoverButton").addEventListener("click", function() {
-      if (caseLastUploadedUrl) {
-        document.getElementById("caseForm").elements.cover_url.value = caseLastUploadedUrl;
-        setCaseUploadStatus("success", "封面图链接已设置。");
-      }
-    });
+    document.getElementById("caseCoverUploadButton").addEventListener("click", handleCaseCoverUploadClick);
+    document.getElementById("caseCoverFileInput").addEventListener("change", handleCaseCoverFileSelected);
+    document.getElementById("caseCoverClearButton").addEventListener("click", handleCaseCoverClear);
+    document.getElementById("caseForm").elements.cover_url.addEventListener("input", updateCaseCoverPreview);
     document.getElementById("caseRefreshButton").addEventListener("click", fetchCases);
     document.getElementById("caseNewButton").addEventListener("click", function() {
       clearNotice();
@@ -3476,33 +3647,33 @@
     });
 
     // ── 案例图片拖拽上传 ──
-    var caseUploadBox = document.getElementById("caseImageUploadBox");
-    caseUploadBox.addEventListener("dragenter", function(event) {
+    var caseCoverBox = document.getElementById("caseCoverSection");
+    caseCoverBox.addEventListener("dragenter", function(event) {
       event.preventDefault();
       caseDragDepth += 1;
-      caseUploadBox.classList.add("drag-active");
+      caseCoverBox.classList.add("drag-active");
     });
-    caseUploadBox.addEventListener("dragover", function(event) {
+    caseCoverBox.addEventListener("dragover", function(event) {
       event.preventDefault();
       if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
-      caseUploadBox.classList.add("drag-active");
+      caseCoverBox.classList.add("drag-active");
     });
-    caseUploadBox.addEventListener("dragleave", function(event) {
+    caseCoverBox.addEventListener("dragleave", function(event) {
       event.preventDefault();
       caseDragDepth = Math.max(0, caseDragDepth - 1);
-      if (caseDragDepth === 0) caseUploadBox.classList.remove("drag-active");
+      if (caseDragDepth === 0) caseCoverBox.classList.remove("drag-active");
     });
-    caseUploadBox.addEventListener("drop", function(event) {
+    caseCoverBox.addEventListener("drop", function(event) {
       event.preventDefault();
       caseDragDepth = 0;
-      caseUploadBox.classList.remove("drag-active");
+      caseCoverBox.classList.remove("drag-active");
       var files = Array.from(event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files : []);
       var file = files.find(function(f) { return ALLOWED_IMAGE_TYPES.includes(f.type); }) || files[0] || null;
       if (!file) {
-        setCaseUploadStatus("error", "没有识别到可上传的图片文件。");
+        setCoverStatus("case", "error", "没有识别到可上传的图片文件。");
         return;
       }
-      handleCaseUploadSelectedImage(file);
+      handleCaseCoverFileSelected(file);
     });
 
     // ── AI 工具管理 ──
@@ -3671,21 +3842,13 @@
       var sortOrder = parseInt(tool.sort_order, 10);
       form.elements.sort_order.value = Number.isFinite(sortOrder) ? sortOrder : "";
       form.elements.status.value = tool.status || "draft";
+      updateCoverPreview("tool", tool.cover_url || "");
+      setCoverStatus("tool", "", "");
     }
 
-    function resetToolUploadUi() {
-      toolLastUploadedUrl = "";
-      document.getElementById("toolImageAltInput").value = "";
-      document.getElementById("toolImageFileInput").value = "";
-      document.getElementById("toolUploadedImageUrl").value = "";
-      document.getElementById("toolUploadPreview").classList.remove("show");
-      setToolUploadStatus("", session && session.access_token ? "上传状态：未上传" : "请先登录后再上传图片。");
-    }
-
-    function setToolUploadStatus(type, message) {
-      var el = document.getElementById("toolUploadStatus");
-      el.className = "sb-upload-status" + (type ? " " + type : "");
-      el.textContent = message;
+    function updateToolCoverPreview() {
+      var form = document.getElementById("toolForm");
+      updateCoverPreview("tool", form.elements.cover_url.value.trim());
     }
 
     function getToolCurrentFormPreview() {
@@ -3723,7 +3886,10 @@
       document.getElementById("toolEditorSubheading").textContent = toolEditingId ? "正在编辑 ID：" + toolEditingId : "保存后会写入 Supabase tools 表。";
       fillToolForm(tool || {});
       updateToolPreviewButton(tool && tool.slug ? { slug: tool.slug, status: tool.status || "draft" } : null);
-      resetToolUploadUi();
+      updateCoverPreview("tool", tool ? tool.cover_url || "" : "");
+      setCoverStatus("tool", "", "");
+      toolLastUploadedUrl = "";
+      document.getElementById("toolCoverFileInput").value = "";
       renderToolList();
     }
 
@@ -3795,21 +3961,21 @@
       return { publicUrl: getPublicImageUrl(filePath) };
     }
 
-    async function handleToolImageUpload() {
+    async function handleToolCoverUploadClick() {
       if (!session || !session.access_token) {
-        setToolUploadStatus("error", "请先登录后再上传图片。");
+        setCoverStatus("tool", "error", "请先登录后再上传图片。");
         return;
       }
-      document.getElementById("toolImageFileInput").click();
+      document.getElementById("toolCoverFileInput").click();
     }
 
-    async function handleToolUploadSelectedImage(fileFromDrop) {
-      var fileInput = document.getElementById("toolImageFileInput");
+    async function handleToolCoverFileSelected(fileFromDrop) {
+      var fileInput = document.getElementById("toolCoverFileInput");
       var file = fileFromDrop instanceof File ? fileFromDrop : (fileInput.files && fileInput.files[0]);
       if (!file) return;
 
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        setToolUploadStatus("error", "只支持 png、jpg、webp、gif 图片。");
+        setCoverStatus("tool", "error", "只支持 png、jpg、webp、gif 图片。");
         fileInput.value = "";
         return;
       }
@@ -3817,25 +3983,29 @@
       var sizeWarning = file.size > IMAGE_SIZE_WARN_BYTES
         ? "图片较大，建议先压缩后再上传。仍会继续上传。\n"
         : "";
-      var uploadButton = document.getElementById("toolUploadImageButton");
+      var uploadButton = document.getElementById("toolCoverUploadButton");
       setLoading(uploadButton, "上传中...", true);
-      setToolUploadStatus(file.size > IMAGE_SIZE_WARN_BYTES ? "warn" : "", sizeWarning + "上传中...");
-      document.getElementById("toolUploadPreview").classList.remove("show");
+      setCoverStatus("tool", file.size > IMAGE_SIZE_WARN_BYTES ? "warn" : "", sizeWarning + "上传中...");
 
       try {
         var result = await uploadToolImageFile(file);
         var publicUrl = result.publicUrl;
         toolLastUploadedUrl = publicUrl;
-        document.getElementById("toolUploadedImageUrl").value = publicUrl;
-        document.getElementById("toolUploadPreview").classList.add("show");
         document.getElementById("toolForm").elements.cover_url.value = publicUrl;
-        setToolUploadStatus("success", "上传成功，封面图链接已自动填入。");
+        updateCoverPreview("tool", publicUrl);
+        setCoverStatus("tool", "success", "封面图已上传，保存后生效。");
       } catch (error) {
-        setToolUploadStatus("error", friendlyUploadError(error.status || error.friendlyStatus, error.message));
+        setCoverStatus("tool", "error", friendlyUploadError(error.status || error.friendlyStatus, error.message));
       } finally {
         fileInput.value = "";
         setLoading(uploadButton, "上传中...", false);
       }
+    }
+
+    function handleToolCoverClear() {
+      document.getElementById("toolForm").elements.cover_url.value = "";
+      updateCoverPreview("tool", "");
+      setCoverStatus("tool", "", "已清空封面链接，保存后前台不再显示封面。");
     }
 
     async function handleToolSave(event) {
@@ -3920,14 +4090,10 @@
     document.getElementById("toolStatusFilter").addEventListener("change", renderToolList);
     document.getElementById("toolToolStatusFilter").addEventListener("change", renderToolList);
     document.getElementById("toolClearFiltersButton").addEventListener("click", resetToolFilters);
-    document.getElementById("toolUploadImageButton").addEventListener("click", handleToolImageUpload);
-    document.getElementById("toolImageFileInput").addEventListener("change", handleToolUploadSelectedImage);
-    document.getElementById("toolUseCoverButton").addEventListener("click", function() {
-      if (toolLastUploadedUrl) {
-        document.getElementById("toolForm").elements.cover_url.value = toolLastUploadedUrl;
-        setToolUploadStatus("success", "封面图链接已设置。");
-      }
-    });
+    document.getElementById("toolCoverUploadButton").addEventListener("click", handleToolCoverUploadClick);
+    document.getElementById("toolCoverFileInput").addEventListener("change", handleToolCoverFileSelected);
+    document.getElementById("toolCoverClearButton").addEventListener("click", handleToolCoverClear);
+    document.getElementById("toolForm").elements.cover_url.addEventListener("input", updateToolCoverPreview);
     document.getElementById("toolRefreshButton").addEventListener("click", fetchTools);
     document.getElementById("toolNewButton").addEventListener("click", function() {
       clearNotice();
@@ -3963,33 +4129,33 @@
     });
 
     // ── 工具图片拖拽上传 ──
-    var toolUploadBox = document.getElementById("toolImageUploadBox");
-    toolUploadBox.addEventListener("dragenter", function(event) {
+    var toolCoverBox = document.getElementById("toolCoverSection");
+    toolCoverBox.addEventListener("dragenter", function(event) {
       event.preventDefault();
       toolDragDepth += 1;
-      toolUploadBox.classList.add("drag-active");
+      toolCoverBox.classList.add("drag-active");
     });
-    toolUploadBox.addEventListener("dragover", function(event) {
+    toolCoverBox.addEventListener("dragover", function(event) {
       event.preventDefault();
       if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
-      toolUploadBox.classList.add("drag-active");
+      toolCoverBox.classList.add("drag-active");
     });
-    toolUploadBox.addEventListener("dragleave", function(event) {
+    toolCoverBox.addEventListener("dragleave", function(event) {
       event.preventDefault();
       toolDragDepth = Math.max(0, toolDragDepth - 1);
-      if (toolDragDepth === 0) toolUploadBox.classList.remove("drag-active");
+      if (toolDragDepth === 0) toolCoverBox.classList.remove("drag-active");
     });
-    toolUploadBox.addEventListener("drop", function(event) {
+    toolCoverBox.addEventListener("drop", function(event) {
       event.preventDefault();
       toolDragDepth = 0;
-      toolUploadBox.classList.remove("drag-active");
+      toolCoverBox.classList.remove("drag-active");
       var files = Array.from(event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files : []);
       var file = files.find(function(f) { return ALLOWED_IMAGE_TYPES.includes(f.type); }) || files[0] || null;
       if (!file) {
-        setToolUploadStatus("error", "没有识别到可上传的图片文件。");
+        setCoverStatus("tool", "error", "没有识别到可上传的图片文件。");
         return;
       }
-      handleToolUploadSelectedImage(file);
+      handleToolCoverFileSelected(file);
     });
 
     refreshConfigUi();
